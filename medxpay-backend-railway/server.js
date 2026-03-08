@@ -1,23 +1,18 @@
+const express = require("express")
+const cors = require("cors")
 
-const express = require("express");
-const cors = require("cors");
-const dotenv = require("dotenv");
-const paymentsRoute = require("./routes/payments");
-const startXRPLListener = require("./services/xrplListener");
+const paymentsRoute = require("./routes/payments")
 
-dotenv.config();
+const app = express()
 
-const app = express();
+app.use(cors())
+app.use(express.json())
 
-app.use(cors());
-app.use(express.json());
+// route API paiements
+app.use("/payments", paymentsRoute)
 
-app.use("/payments", paymentsRoute);
-
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 4000
 
 app.listen(PORT, () => {
-  console.log("MEDXPAY backend running on port " + PORT);
-});
-
-startXRPLListener();
+  console.log("MEDXPAY backend running on port", PORT)
+})
