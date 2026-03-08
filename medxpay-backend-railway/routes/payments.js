@@ -1,27 +1,52 @@
+const express = require("express")
+const router = express.Router()
+const { v4: uuidv4 } = require("uuid")
 
-const express = require("express");
-const router = express.Router();
+// wallet marchand XRPL
+const MERCHANT_WALLET = "rTON_WALLET_XRPL"
 
-let transactions = [];
+// mémoire temporaire des paiements
+let payments = {}
 
-router.post("/create", (req, res) => {
+// créer paiement
+router.post("/create-payment", (req, res) => {
 
-  const { amount } = req.body;
+  const { amount } = req.body
 
-  const tx = {
-    id: Date.now(),
-    amount,
+  const paymentId = uuidv4()
+
+  const payment = {
+    id: paymentId,
+    amount: amount,
+    wallet: MERCHANT_WALLET,
     status: "pending",
-    created: new Date()
-  };
+    created: Date.now()
+  }
 
-  transactions.push(tx);
+  payments[paymentId] = payment
 
-  res.json(tx);
-});
+  res.json(payment)
 
+})
+
+// vérifier statut paiement
+router.get("/payment-status/:id", (req, res) => {
+
+  const payment = payments[req.params.id]
+
+  if (!payment) {
+    return res.status(404).json({ error: "payment not found" })
+  }
+
+  res.json(payment)
+
+})
+
+// liste paiements
 router.get("/all", (req, res) => {
-  res.json(transactions);
-});
 
-module.exports = router;
+  res.json(Object.values(payments))
+
+})
+
+module.exports = router
