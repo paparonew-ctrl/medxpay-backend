@@ -1,34 +1,42 @@
+const xrpl = require("xrpl")
 
-const xrpl = require("xrpl");
+const client = new xrpl.Client("wss://s.altnet.rippletest.net:51233")
 
-async function startXRPLListener(){
+// wallet du marchand
+const MERCHANT_WALLET = "TON_WALLET_XRPL"
 
-  try{
+async function startXRPLListener() {
 
-    const client = new xrpl.Client("wss://s.altnet.rippletest.net:51233");
+  await client.connect()
 
-    await client.connect();
+  console.log("Connected to XRPL testnet")
 
-    console.log("Connected to XRPL testnet");
+  client.request({
+    command: "subscribe",
+    streams: ["transactions"]
+  })
 
-    await client.request({
-      command: "subscribe",
-      streams: ["transactions"]
-    });
+  client.on("transaction", (tx) => {
 
-    client.on("transaction", (tx) => {
+    const transaction = tx.transaction
 
-      console.log("XRPL Transaction detected:");
-      console.log(tx);
+    if (!transaction) return
 
-    });
+    // filtre destination
+    if (transaction.Destination === MERCHANT_WALLET) {
 
-  }catch(err){
+      console.log("MEDXPAY PAYMENT DETECTED")
 
-    console.error("XRPL Listener error:", err);
+      console.log({
+        amount: transaction.Amount,
+        sender: transaction.Account,
+        hash: transaction.hash
+      })
 
-  }
+    }
+
+  })
 
 }
 
-module.exports = startXRPLListener;
+module.exports = startXRPLListener
